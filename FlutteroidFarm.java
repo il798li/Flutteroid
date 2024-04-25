@@ -6,7 +6,7 @@ public class FlutteroidFarm {
         this.bst = new FlutteroidBSTNode();
     }
 
-    private int getNumberOfFlutteroids (FlutteroidBSTNode node) {
+    private int getNumberOfFlutteroids (FlutteroidBSTNode node) { //
         FlutteroidBSTNode leftNode = node.getLeftChild();
         FlutteroidBSTNode rightNode = node.getRightChild();
         if (leftNode == null) {
