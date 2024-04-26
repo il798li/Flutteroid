@@ -1,18 +1,21 @@
+import java.nio.file.FileSystemNotFoundException;
+
 public class FlutteroidFarm {
 
     private FlutteroidBSTNode bst;
+    private int time;
 
     public FlutteroidFarm () {
         this.bst = new FlutteroidBSTNode();
     }
 
     private int getNumberOfFlutteroids (FlutteroidBSTNode node) { //
-        FlutteroidBSTNode leftNode = node.getLeftChild();
-        FlutteroidBSTNode rightNode = node.getRightChild();
-        if (leftNode == null) {
+        FlutteroidBSTNode lNode = node.getLeftChild();
+        FlutteroidBSTNode rNode = node.getRightChild();
+        if (lNode == null) {
             return 1;
         }
-        return 1 + getNumberOfFlutteroids(leftNode) + getNumberOfFlutteroids(rightNode);
+        return 1 + getNumberOfFlutteroids(lNode) + getNumberOfFlutteroids(rNode);
     }
 
     public int getNumberOfFlutteroids() {
@@ -40,37 +43,37 @@ public class FlutteroidFarm {
     }
 
     private FlutteroidBSTNode addFlutteroid(FlutteroidBSTNode localRoot, Flutteroid flutteroid) {
-        FlutteroidBSTNode leftNode = localRoot.getLeftChild();
-        FlutteroidBSTNode rightNode = localRoot.getRightChild();
+        FlutteroidBSTNode lNode = localRoot.getLeftChild();
+        FlutteroidBSTNode rNode = localRoot.getRightChild();
 
-        if (leftNode == null && rightNode == null) {
+        if (lNode == null && rNode == null) {
             localRoot.setFlutteroidData(flutteroid);
             return localRoot;
         }
-        if (leftNode != null && rightNode == null) {
+        if (lNode != null && rNode == null) {
             FlutteroidBSTNode node = new FlutteroidBSTNode();
             node.setFlutteroidData(flutteroid);
             localRoot.setRightChild (node);
             return node;
         }
-        if (leftNode == null && rightNode != null) {
+        if (lNode == null && rNode != null) {
             FlutteroidBSTNode node = new FlutteroidBSTNode();
             node.setFlutteroidData(flutteroid);
             localRoot.setLeftChild (node);
             return node;
         }
 
-        String leftName = leftNode.getFlutteroidData().getNameID();
-        String rightName = rightNode.getFlutteroidData().getNameID();
+        String leftName = lNode.getFlutteroidData().getNameID();
+        String rightName = rNode.getFlutteroidData().getNameID();
         String flutName = flutteroid.getNameID();
 
         int compareLeft = Math.abs(flutName.compareTo(leftName));
         int compareRight = Math.abs(flutName.compareTo(rightName));
 
         if (compareLeft < compareRight) {
-            return addFlutteroid (leftNode, flutteroid);
+            return addFlutteroid (lNode, flutteroid);
         } else {
-            return addFlutteroid(rightNode, flutteroid);
+            return addFlutteroid(rNode, flutteroid);
         }
     }
 
@@ -91,11 +94,11 @@ public class FlutteroidFarm {
             return localFlut;
         }
 
-        FlutteroidBSTNode leftNode = localRoot.getLeftChild();
-        FlutteroidBSTNode rightNode = localRoot.getRightChild();
+        FlutteroidBSTNode lNode = localRoot.getLeftChild();
+        FlutteroidBSTNode rNode = localRoot.getRightChild();
 
-        Flutteroid leftFlut = findFlutteroid(leftNode, flutteroidName);
-        Flutteroid rightFlut = findFlutteroid(rightNode, flutteroidName);
+        Flutteroid leftFlut = findFlutteroid(lNode, flutteroidName);
+        Flutteroid rightFlut = findFlutteroid(rNode, flutteroidName);
 
         if (leftFlut == null) {
             return rightFlut;
@@ -117,51 +120,127 @@ public class FlutteroidFarm {
 
         int compare = flutteroidName.compareTo (localRoot.getFlutteroidData().getNameID());
 
-        FlutteroidBSTNode leftNode = null;
-        FlutteroidBSTNode rightNode = null;
+        FlutteroidBSTNode lNode = null;
+        FlutteroidBSTNode rNode = null;
         if (compare < 0) {
-            leftNode = localRoot.getLeftChild();
-            leftNode = removeFlutteroid(leftNode, flutteroidName);
-            localRoot.setLeftChild(leftNode);
+            lNode = localRoot.getLeftChild();
+            lNode = removeFlutteroid(lNode, flutteroidName);
+            localRoot.setLeftChild(lNode);
             return localRoot;
         } else if (compare > 0) {
-            rightNode = localRoot.getRightChild();
-            rightNode = removeFlutteroid(rightNode, flutteroidName);
-            localRoot.setLeftChild(rightNode);
+            rNode = localRoot.getRightChild();
+            rNode = removeFlutteroid(rNode, flutteroidName);
+            localRoot.setLeftChild(rNode);
             return localRoot;
         } else {
-            if (leftNode == null) {
-                return rightNode;
+            if (lNode == null) {
+                return rNode;
             }
-            if (rightNode == null) {
-                return leftNode;
+            if (rNode == null) {
+                return lNode;
             }
 
             if (localRoot.getRightChild() == null) {
                 localRoot = localRoot.getLeftChild();
-                leftNode = leftNode.getLeftChild();
+                lNode = lNode.getLeftChild();
             } else {
-                localRoot.setFlutteroidData(findLargestChild(leftNode));;
+                localRoot.setFlutteroidData(findLargestChild(lNode));;
                 return localRoot;
             }
         }
     }
 
     private Flutteroid findLargestChild(FlutteroidBSTNode localRoot) {
-        FlutteroidBSTNode leftNode = localRoot.getLeftChild();
-        FlutteroidBSTNode rightNode = localRoot.getRightChild();
+        FlutteroidBSTNode lNode = localRoot.getLeftChild();
+        FlutteroidBSTNode rNode = localRoot.getRightChild();
 
-        if (leftNode == null && rightNode == null) {return localRoot.getFlutteroidData();}
-        else if (leftNode == null && rightNode != null) {return findLargestChild(rightNode);}
-        else if (leftNode != null && rightNode == null) {return findLargestChild(leftNode);}
+        if (lNode == null && rNode == null) {return localRoot.getFlutteroidData();}
+        else if (lNode == null && rNode != null) {return findLargestChild(rNode);}
+        else if (lNode != null && rNode == null) {return findLargestChild(lNode);}
         else {
-            Flutteroid leftLargeFlut = findLargestChild(leftNode);
-            Flutteroid rightLargeFlut = findLargestChild(rightNode);
+            Flutteroid leftLargeFlut = findLargestChild(lNode);
+            Flutteroid rightLargeFlut = findLargestChild(rNode);
 
             if (leftLargeFlut.getNameID().compareTo (rightLargeFlut.getNameID()) > 0) {
                 return leftLargeFlut;
             }
             return rightLargeFlut;
+        }
+    }
+
+    public void displayFlutteroidFarmAscending() {
+        displayFlutteroidFarmAscending(bst);
+    }
+
+    private void displayFlutteroidFarmAscending(FlutteroidBSTNode localRoot) {
+        FlutteroidBSTNode lNode = localRoot.getLeftChild();
+        displayFlutteroidFarmAscending(lNode);
+
+        Flutteroid flut = localRoot.getFlutteroidData();
+        if (flut != null) {
+            System.out.println(flut.getNameID());
+        } else {
+            return;
+        }
+
+        FlutteroidBSTNode rNode = localRoot.getRightChild();
+        displayFlutteroidFarmAscending(rNode);
+    }
+
+    public void displayFlutteroidFarmDescending() {
+        displayFlutteroidFarmDescending(bst);
+    }
+
+    private void displayFlutteroidFarmDescending(FlutteroidBSTNode localRoot) {
+        FlutteroidBSTNode lNode = localRoot.getRightChild();
+        displayFlutteroidFarmAscending(lNode);
+
+        Flutteroid flut = localRoot.getFlutteroidData();
+        if (flut != null) {
+            System.out.println(flut.getNameID());
+        } else {
+            return;
+        }
+
+        FlutteroidBSTNode rNode = localRoot.getLeftChild();
+        displayFlutteroidFarmAscending(rNode);
+    }
+
+    public void displayFlutteroidFarmStructure() {
+        displayFlutteroidFarmStructure(bst, 0, "ROOT ");
+    }
+
+    private void displayFlutteroidFarmStructure(FlutteroidBSTNode localRoot, int depth, String nodeLabel) {
+        String indent = "   ";
+        System.out.print(indent);
+        if (depth == 0) {
+            System.out.print(nodeLabel);
+        }
+
+        for (int i = 0; i < depth; i++) {
+            System.out.print(indent);
+        }
+
+
+        Flutteroid localFlut = localRoot.getFlutteroidData();
+        if (localFlut != null) {
+            System.out.println(localFlut.getNameID());
+
+            FlutteroidBSTNode lNode = localRoot.getLeftChild();
+            displayFlutteroidFarmStructure(lNode, depth + 1, "LEFT  ");
+
+            FlutteroidBSTNode rNode = localRoot.getRightChild();
+            displayFlutteroidFarmStructure(rNode, depth + 1, "RIGHT ");
+        } else {
+            System.out.println ("null");
+        }
+    }
+
+    public void updateFarm() {
+        time += 1;
+        System.out.println("Updating Farm Status By One Time Unit (Total Time: " + time + "):");
+        if (isFarmEmpty() == false) {
+            
         }
     }
 }
