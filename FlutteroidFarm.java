@@ -1,12 +1,25 @@
 import java.nio.file.FileSystemNotFoundException;
+import java.util.ArrayList;
 
 public class FlutteroidFarm {
 
-    private FlutteroidBSTNode bst;
-    private int time;
+    private FlutteroidBSTNode bst; // entire farm
+    private int time; //time passed since starting
+
+    private ArrayList<Flutteroid> escapedFlutteroids;
+    private ArrayList<Integer> escapedTimes;
+    private ArrayList<FlutteroidBSTNode> queue;
+
+    public static final String indent = "   ";
 
     public FlutteroidFarm () {
         this.bst = new FlutteroidBSTNode();
+        this.time = 0;
+
+        this.escapedFlutteroids = new ArrayList<Flutteroid>();
+        this.escapedTimes = new ArrayList<Integer>();
+
+        this.queue = new ArrayList<FlutteroidBSTNode>();
     }
 
     private int getNumberOfFlutteroids (FlutteroidBSTNode node) { //
@@ -148,6 +161,7 @@ public class FlutteroidFarm {
                 return localRoot;
             }
         }
+        return null;
     }
 
     private Flutteroid findLargestChild(FlutteroidBSTNode localRoot) {
@@ -164,7 +178,7 @@ public class FlutteroidFarm {
             if (leftLargeFlut.getNameID().compareTo (rightLargeFlut.getNameID()) > 0) {
                 return leftLargeFlut;
             }
-            return rightLargeFlut;
+            return rightLargeFlut; // il798li and codeCook
         }
     }
 
@@ -211,7 +225,6 @@ public class FlutteroidFarm {
     }
 
     private void displayFlutteroidFarmStructure(FlutteroidBSTNode localRoot, int depth, String nodeLabel) {
-        String indent = "   ";
         System.out.print(indent);
         if (depth == 0) {
             System.out.print(nodeLabel);
@@ -237,10 +250,85 @@ public class FlutteroidFarm {
     }
 
     public void updateFarm() {
-        time += 1;
+        this.time += 1;
+        for (int index = 0; index < escapedTimes.size(); index++) {
+            int time = escapedTimes.get(index);
+            time -= 1;
+            escapedTimes.set(index, time);
+        }
         System.out.println("Updating Farm Status By One Time Unit (Total Time: " + time + "):");
         if (isFarmEmpty() == false) {
-            
+            moveFlutteroids();
+            updateEscapees();
+        }
+    }
+
+    public void moveFlutteroids() {
+        queue.add(bst);
+        for (int index = 0; index < queue.size(); index++) {
+            FlutteroidBSTNode node = queue.get(index);
+            Flutteroid flut = node.getFlutteroidData();
+            if (flut != null) {
+                flut.move();
+            }
+            if (node.getLeftChild() != null) {
+                queue.add(node.getLeftChild());
+            }
+            if (node.getRightChild() != null) {
+                queue.add(node.getRightChild());
+            }
+        }
+    }
+
+    public void updateEscapees() {
+        updateEscapees(bst);
+    }
+
+    private void updateEscapees(FlutteroidBSTNode localRoot) {
+        Flutteroid flut = localRoot.getFlutteroidData();
+        Point2D point = flut.getLocation();
+
+        boolean x = -100 <= point.getX() && point.getX() <= 100;
+        boolean y = -100 <= point.getY() && point.getY() <= 100;
+
+        int captureTime = (int) (Math.random() * 10 + 1);
+
+        if (x == false || y == false) {
+            System.out.println ("Flutteroid " + flut.getNameID() + " has escaped to " + point.toString() + " and must be captured within " + captureTime + " seconds!");
+            flut.increaseEscapes();
+
+            // saving the escaped flutteroid and time, to be used later by accessing both arrays at the same index
+            escapedFlutteroids.add(flut);
+            escapedTimes.add(captureTime);
+            removeFlutteroid(flut.getNameID());
+        }
+    }
+
+    public void attemptCapture() {
+        for (int index = 0; index < escapedFlutteroids.size(); index++) {
+            Flutteroid flut = escapedFlutteroids.get(index);
+            int captureTime = escapedTimes.get(index);
+            if (captureTime <= 0) {
+                flut.setXLocation(0);
+                flut.setYLocation(0);
+            }
+            escapedFlutteroids.remove(index);
+            escapedTimes.remove(index);
+        }
+    }
+
+    public void displayEscapedFlutteroids() {
+        for (int index = 0; index <= escapedFlutteroids.size(); index++) {
+            Flutteroid flut = escapedFlutteroids.get(index);
+            if (flut != null) {
+                System.out.print("{{");
+                System.out.print(flut.getNameID());
+                System.out.print(" : ");
+                System.out.print(flut.getLocation().toString());
+                System.out.print("} Capture Time: ");
+                System.out.print(escapedTimes.get(index));
+                System.out.println("}");
+            }
         }
     }
 }
